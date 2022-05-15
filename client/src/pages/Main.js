@@ -1,5 +1,4 @@
 import React from "react";
-import styled from "styled-components";
 import musicstonelogo from "../img/musicstonelogo.png";
 
 export function Main() {
@@ -12,7 +11,7 @@ export function Main() {
         <br />
         <span className="maintxt">Stones</span>
       </div>
-      <img className="mainimg" src={musicstonelogo}></img>
+      <img className="mainimg" src={musicstonelogo} alt="mainimg"></img>
       <hr />
     </div>
   );

@@ -1,30 +1,22 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import {
-  AiOutlineCheckSquare,
   AiOutlinePlayCircle,
   AiFillDelete,
   AiFillCustomerService,
 } from "react-icons/ai";
-import service_abi from "../abi/Service";
-import Caver from "caver-js";
 
 export function PlayList() {
   const state = useSelector((state) => state.accountReducer);
   const account = state.account;
   const userId = state.userId;
   const [stoneSrc, setStoneSrc] = useState("");
-  const [currentTime, setCurrentTime] = useState(0);
   const [stoneId, setStoneId] = useState(0);
   const audioRef = useRef();
-  const [isPaused, setPaused] = useState(false);
   const [playList, setPlayList] = useState([]);
-  const [keepingTokenBal, setKeepingTokenBal] = useState(0);
   const [remainToken, setRemainToken] = useState(0);
-  const caver = new Caver(window.klaytn);
-  var serviceAddress = process.env.REACT_APP_SERVICE_ADDRESS;
   const server =
     process.env.REACT_APP_SERVER_ADDRESS || "http://127.0.0.1:12367";
   const [isGetPl, setIsGetPL] = useState(false);

@@ -1,14 +1,11 @@
 import { Link } from "react-router-dom";
 import musicstonelogo from "../img/musicstonelogo.png";
 import { BsWallet2 } from "react-icons/bs";
-import React, { useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import axios from "axios";
+import React from "react";
+import { useSelector } from "react-redux";
 
 function Nav({ connectWallet }) {
   const state = useSelector((state) => state.accountReducer);
-  const account = state.account;
-  const dispatch = useDispatch();
   return (
     <div id="nav">
       <img className="logo" src={musicstonelogo} alt="logo"></img>

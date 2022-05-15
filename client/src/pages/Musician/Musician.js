@@ -1,11 +1,11 @@
 import styled from "styled-components";
-import MusicianCard from '../../components/Musician/MusicianCard';
+import MusicianCard from "../../components/Musician/MusicianCard";
 import SearchIcon from "@mui/icons-material/Search";
 import React, { useState, useEffect, useRef } from "react";
 import { useInView } from "react-intersection-observer";
 import { useSelector, useDispatch } from "react-redux";
 import axios from "axios";
-import { loadMusicianList, resetMusicianList } from '../../actions';
+import { loadMusicianList, resetMusicianList } from "../../actions";
 
 export function Musician() {
   /* state
@@ -30,29 +30,31 @@ export function Musician() {
 
   //서버에서 musician 데이터 불러오기
   const loadMusicians = () => {
-    const server = process.env.REACT_APP_SERVER_ADDRESS || "http://127.0.0.1:12367";
-    const req = `${server}/musician?startIndex=${startIdx}&endIndex=${startIdx + 19}&keyword=${keyword}`
+    const server =
+      process.env.REACT_APP_SERVER_ADDRESS || "http://127.0.0.1:12367";
+    const req = `${server}/musician?startIndex=${startIdx}&endIndex=${
+      startIdx + 19
+    }&keyword=${keyword}`;
     setLoading(true);
 
-    axios.get(req)
-      .then((res) => {
-        const musicianData = res.data.data;
-        dispatch(loadMusicianList(musicianData));
-        if (musicianData.length < 20) setLoadAll(true);
+    axios.get(req).then((res) => {
+      const musicianData = res.data.data;
+      dispatch(loadMusicianList(musicianData));
+      if (musicianData.length < 20) setLoadAll(true);
 
-        setStartIdx(startIdx + 20);
-        setLoading(false);
-      })
-  }
+      setStartIdx(startIdx + 20);
+      setLoading(false);
+    });
+  };
 
   const handleInputEnter = (e) => {
-    if (e.key == 'Enter') {
+    if (e.key === "Enter") {
       search();
     }
-  }
+  };
   const search = () => {
     setKeyword(keywordInput.current.value);
-  }
+  };
 
   useEffect(() => {
     // 보여줄 결과가 남아 있을때 스크롤이 로드할 위치고 로딩 중이 아니면 load
@@ -75,7 +77,7 @@ export function Musician() {
         setInitial(false);
       }
     }
-  }, [keyword])
+  }, [keyword]);
 
   useEffect(() => {
     //이전 검색에서 loadAll이 true였던 경우 초기화도 함께 실행
@@ -85,26 +87,32 @@ export function Musician() {
     } else if (startIdx === 1 && !initial) {
       loadMusicians();
     }
-  }, [startIdx])
-
+  }, [startIdx]);
 
   return (
     <Body>
       <Nav>
         <h1>Find your Musician</h1>
         <SearchWrap>
-          <SearchInput ref={keywordInput} type="text" placeholder="찾는 뮤지션을 검색해 주세요." onKeyPress={handleInputEnter} />
+          <SearchInput
+            ref={keywordInput}
+            type="text"
+            placeholder="찾는 뮤지션을 검색해 주세요."
+            onKeyPress={handleInputEnter}
+          />
           <SearchButton onClick={search}>
             <SearchIcon />
           </SearchButton>
         </SearchWrap>
       </Nav>
-      <CardsWrap >
+      <CardsWrap>
         {musicianList.musicians.map((musician, idx) => {
           return <MusicianCard key={idx + startIdx} musician={musician} />;
         })}
       </CardsWrap>
-      <div id="observer" ref={ref}> </div>
+      <div id="observer" ref={ref}>
+        {" "}
+      </div>
     </Body>
   );
 }

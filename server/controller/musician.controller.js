@@ -13,6 +13,29 @@ exports.musician_get = async (req, res, next) => {
   }
 };
 
+// randomMusician
+exports.musician_random_get = async (req, res, next) => {
+  const musicianReq = req.query;
+  try {
+    const musicianList = await MusicianService.getMusicians(musicianReq);
+    var musicianRandomList = [];
+    while (musicianRandomList.length < 4) {
+      var randomMusician = musicianList.splice(
+        Math.floor(Math.random() * musicianList.length),
+        1
+      )[0];
+      musicianRandomList.push(randomMusician);
+    }
+    if (musicianRandomList) {
+      return res
+        .status(201)
+        .json({ data: musicianRandomList, message: "Success" });
+    }
+  } catch (e) {
+    return res.status(400).json({ message: e.message });
+  }
+};
+
 // musicianInfo, AlnumInfo, isLike
 exports.musician_musician_id_get = async (req, res, next) => {
   const userId = req.query.userId;

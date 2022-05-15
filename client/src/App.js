@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Main, Album, Mypage, PlayList, RegisterMusician } from "./pages";
 import BuyToken from "./pages/BuyToken";
@@ -7,15 +7,13 @@ import { MyStone, BuyStone, TradeStone } from "./pages/Stones";
 import Nav from "./components/Nav";
 import Footer from "./components/Footer";
 import "./App.css";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import { RegisterAlbum } from "./pages/RegisterAlbum";
 import RegisterStone from "./pages/RegisterStone";
 import axios from "axios";
 
 function App() {
   const dispatch = useDispatch();
-  const state = useSelector((state) => state.accountReducer);
-  const [userId, setUserId] = useState("");
   const server =
     process.env.REACT_APP_SERVER_ADDRESS || "http://127.0.0.1:12367";
 
@@ -25,13 +23,11 @@ function App() {
       .get(`${server}/user/${account}`)
       .then((res) => {
         dispatch({ type: "GET_USERID", userId: res.data.userId });
-        setUserId(res.data.userId);
       })
       .catch((e) => alert(e));
   };
   const kaikasLogin = async () => {
     if (typeof window.klaytn !== "undefined") {
-      const provider = window["klaytn"];
     }
     try {
       const wallet = await window.klaytn.enable();
@@ -43,7 +39,6 @@ function App() {
   };
   const connectWallet = () => {
     if (typeof window.klaytn !== "undefined") {
-      const provider = window["klaytn"];
       kaikasLogin();
     } else {
       console.log("connectwallet else");

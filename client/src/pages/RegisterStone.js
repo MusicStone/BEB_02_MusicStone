@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
-import select from "react-select";
 import { Link, useNavigate } from "react-router-dom";
 import Caver from "caver-js";
 import service_abi from "../abi/Service";
@@ -20,10 +19,8 @@ export default function RegisterStone() {
   const [album, setAlbum] = useState("");
   const [albumList, setAlbumList] = useState([]);
   const [SFTAmount, setSFTAmount] = useState(0);
-  const [txHash, setTxHash] = useState("");
   const caver = new Caver(window.klaytn);
   const [tokenId, setTokenId] = useState("");
-  var serviceAddress = process.env.REACT_APP_SERVICE_ADDRESS;
   const server =
     process.env.REACT_APP_SERVER_ADDRESS || "http://127.0.0.1:12367";
   let albumlist;
@@ -87,7 +84,7 @@ export default function RegisterStone() {
         .then((data) =>
           setTokenId(data.events.SFTMinted[0].returnValues.token_id)
         );
-    } else if (album == "") {
+    } else if (album === "") {
       alert("앨범을 선택해주세요. 원하는 앨범이 없다면 앨범을 등록해주세요.");
     } else if (!stoneName) {
       alert("이름을 입력해주세요.");
@@ -106,8 +103,6 @@ export default function RegisterStone() {
     } else if (!SFTAmount) {
       alert("민팅할 SFT 개수를 입력해주세요.");
     }
-
-
   };
   const saveStone = async () => {
     const formData = new FormData();
@@ -131,7 +126,6 @@ export default function RegisterStone() {
         console.log(res.data.message);
         navigate("/stones/myStone");
       });
-
   };
   useEffect(() => {
     if (tokenId) {

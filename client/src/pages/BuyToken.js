@@ -30,16 +30,6 @@ function BuyToken() {
   const chainId = 1001; // 클레이튼 테스트 네트워크 접속 ID
   caverExt.initKASAPI(chainId, accessKeyId, secretAccessKey); //KAS console 초기화
 
-  const [transferData, setTransferData] = useState({
-    from: state.account,
-    to: "0xD48911AAC5853a6cfDe55514dF6DF6C5E0b41DaB",
-    value: null,
-    gas: 3000000,
-    txHash: null,
-    receipt: null,
-    error: null,
-    rawTransaction: null,
-  });
   // 토큰 교환을 위한 토큰 수량 입력 이벤트(Klay & Token)
   const onChangeValue = (e) => {
     const { value, name } = e.target;
@@ -49,19 +39,11 @@ function BuyToken() {
         klay: Number.parseFloat(value),
         token: Number.parseFloat(value) * swapRatio,
       }));
-      setTransferData((prevData) => ({
-        ...prevData,
-        value: swapAmount.klay,
-      }));
       //뮤직스톤 Token으로 입력되면 klay입력창에 토큰 교환비율에 따라 값을 계산해서 넣어준다.
     } else if (name === "token") {
       setSwapAmount(() => ({
         token: Number.parseFloat(value),
         klay: Number.parseFloat(value) / swapRatio,
-      }));
-      setTransferData((prevData) => ({
-        ...prevData,
-        value: swapAmount.klay,
       }));
     }
   };
@@ -107,7 +89,6 @@ function BuyToken() {
       return;
     }
     const klayAmount = String(swapAmount.klay);
-    const tokenAmount = String(swapAmount.token);
     var myContract2 = new caver.klay.Contract(service_abi, serviceAddress);
     const tx = await myContract2.methods
       .buyToken()
@@ -166,7 +147,7 @@ function BuyToken() {
   };
   const saveDeposit = async () => {
     await axios.post(`${server}/user/deposit/${state.account}`).then((res) => {
-      if (res.data.message == "Ok") {
+      if (res.data.message === "Ok") {
         alert("예치가 완료되었습니다.");
       } else {
         alert("오류, 저장에 실패했습니다.");
@@ -175,7 +156,7 @@ function BuyToken() {
   };
   const saveGetDeposit = async () => {
     await axios.post(`${server}/user/deposit/${state.account}`).then((res) => {
-      if (res.data.message == "Ok") {
+      if (res.data.message === "Ok") {
         alert("출금이 완료되었습니다.");
       } else {
         alert("오류, 저장에 실패했습니다.");
@@ -241,7 +222,7 @@ function BuyToken() {
         console.log(err);
       });
 
-    if (isSend == false) {
+    if (isSend === false) {
       alert("오류로 인해 전송이 실패했습니다.");
     } else {
       alert("전송 성공, 잔액을 확인해주세요.");
@@ -266,7 +247,7 @@ function BuyToken() {
         console.log(err);
       });
 
-    if (isSend == false) {
+    if (isSend === false) {
       alert("오류로 인해 전송이 실패했습니다.");
     } else {
       saveGetDeposit();

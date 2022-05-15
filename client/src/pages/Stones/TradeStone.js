@@ -3,8 +3,6 @@ import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import axios from "axios";
-import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import SellStone from "../../components/Stones/SellStone";
 import TradeStoneModal from "../../components/Stones/TradeStoneModal";
 import PreviewStream from "../../components/PreviewStream";
@@ -18,7 +16,7 @@ export function TradeStone() {
     stoneDetail: null,
     musician: null,
     sellList: [],
-    minPrice: null
+    minPrice: null,
   });
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTrade, setModalTrade] = useState("");
@@ -37,20 +35,21 @@ export function TradeStone() {
     } else {
       return eName;
     }
-  }
+  };
 
   const showDesc = () => {
-    const desc = stoneData.stoneDetail.description.split('\n');
-    return (<Desc>
-      {desc.map((line) => {
-        line = line === '\r' ? ' ' : line;
-        return <div>{line}</div>
-      })}
-    </Desc>)
-  }
+    const desc = stoneData.stoneDetail.description.split("\n");
+    return (
+      <Desc>
+        {desc.map((line) => {
+          line = line === "\r" ? " " : line;
+          return <div>{line}</div>;
+        })}
+      </Desc>
+    );
+  };
 
   const showSellList = () => {
-
     return stoneData.sellList.map((trade) => {
       return (
         <SellStone
@@ -75,7 +74,6 @@ const showPriceDif = () => {
     </PriceDif>
   );
 };*/
-
 
   const addPlayList = () => {
     if (account.isConnect) {
@@ -104,7 +102,6 @@ const showPriceDif = () => {
     setModalOpen(true);
   };
 
-
   useEffect(() => {
     //KLAY 가격 로드
     const apiUrl = `https://api.bithumb.com/public/ticker/KLAY_KRW`;
@@ -112,63 +109,63 @@ const showPriceDif = () => {
       .get(apiUrl)
       .then((price) => setKlayPrice(price.data.data.closing_price));
 
-    const req = `${server}/stones/tradestone/${id}`
-    axios.get(req)
-      .then((res) => setStoneData(res.data))
+    const req = `${server}/stones/tradestone/${id}`;
+    axios.get(req).then((res) => setStoneData(res.data));
   }, []);
 
-  return (
-    stoneData.stoneDetail
-      ?
-      <Body>
-        <StoneContainer>
-          <PreviewStream img={stoneData.albumImg} stoneId={stoneData.stoneDetail.id} />
-          <StoneBox>
-            <StoneWrapper>
-              <Title>
-                <span>
-                  {stoneData.stoneDetail.name} - {stoneData.musician ? showName() : 'unknown'}
-                </span>
-                <AddPlaylistBtn onClick={addPlayList}>+Playlist</AddPlaylistBtn>
-              </Title>
-              <Info>
-                <Price>
-                  <div>최저가 : {stoneData.minPrice} KLAY</div>
-                  {/*<div>전일비 : {showPriceDif()}</div>*/}
-                </Price>
-                <Lyricist>작사가 : {stoneData.stoneDetail.lyricist}</Lyricist>
-                <Composer>작곡가 : {stoneData.stoneDetail.composer}</Composer>
-                {showDesc()}
-              </Info>
-            </StoneWrapper>
-          </StoneBox>
-        </StoneContainer>
-        <TradeContainer>
-          <SellListWrapper>
-            <SellNav>
-              <span>가격(Klay)</span>
-              <span>가격(원)</span>
-              <span>수량</span>
-              <span>판매자</span>
-              <span>구매</span>
-            </SellNav>
-            <SellList>{showSellList()}</SellList>
-          </SellListWrapper>
-          <NotifyWrapper>{showRules()}</NotifyWrapper>
-        </TradeContainer>
-        <TradeStoneModal
-          ref={modalRef}
-          klayPrice={klayPrice}
-          stoneData={stoneData}
-          modalOpen={modalOpen}
-          modalTrade={modalTrade}
-          setModalOpen={setModalOpen}
-          account={account}
-          showName={showName}
+  return stoneData.stoneDetail ? (
+    <Body>
+      <StoneContainer>
+        <PreviewStream
+          img={stoneData.albumImg}
+          stoneId={stoneData.stoneDetail.id}
         />
-      </Body>
-      : null
-  );
+        <StoneBox>
+          <StoneWrapper>
+            <Title>
+              <span>
+                {stoneData.stoneDetail.name} -{" "}
+                {stoneData.musician ? showName() : "unknown"}
+              </span>
+              <AddPlaylistBtn onClick={addPlayList}>+Playlist</AddPlaylistBtn>
+            </Title>
+            <Info>
+              <Price>
+                <div>최저가 : {stoneData.minPrice} KLAY</div>
+                {/*<div>전일비 : {showPriceDif()}</div>*/}
+              </Price>
+              <Lyricist>작사가 : {stoneData.stoneDetail.lyricist}</Lyricist>
+              <Composer>작곡가 : {stoneData.stoneDetail.composer}</Composer>
+              {showDesc()}
+            </Info>
+          </StoneWrapper>
+        </StoneBox>
+      </StoneContainer>
+      <TradeContainer>
+        <SellListWrapper>
+          <SellNav>
+            <span>가격(Klay)</span>
+            <span>가격(원)</span>
+            <span>수량</span>
+            <span>판매자</span>
+            <span>구매</span>
+          </SellNav>
+          <SellList>{showSellList()}</SellList>
+        </SellListWrapper>
+        <NotifyWrapper>{showRules()}</NotifyWrapper>
+      </TradeContainer>
+      <TradeStoneModal
+        ref={modalRef}
+        klayPrice={klayPrice}
+        stoneData={stoneData}
+        modalOpen={modalOpen}
+        modalTrade={modalTrade}
+        setModalOpen={setModalOpen}
+        account={account}
+        showName={showName}
+      />
+    </Body>
+  ) : null;
 }
 
 const showRules = () => {
@@ -231,13 +228,13 @@ margin: 0 auto;
 display flex;
 `;
 const StoneBox = styled.div`
-width: 100%;
-height: 100%;
-overflow:hidden;
-position: relative;
-display:flex;
-justify-content: center;
-align-items: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `;
 const StoneWrapper = styled.div`
   position: absolute;
@@ -280,10 +277,6 @@ const Price = styled.div`
     font-weight: 500;
     display: flex;
   }
-`;
-const PriceDif = styled.span`
-  display: flex;
-  color: ${({ color }) => color};
 `;
 const Composer = styled.div``;
 const Lyricist = styled.div``;
