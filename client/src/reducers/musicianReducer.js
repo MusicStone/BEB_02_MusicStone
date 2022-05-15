@@ -1,8 +1,7 @@
 import { LOAD_MUSICIAN_LIST, RESET_MUSICIAN_LIST } from "../actions";
 
 const initialState = {
-  musicians: [],
-  startIdx: 0
+  musicians: []
 };
 
 const musicianReducer = (state = initialState, action) => {

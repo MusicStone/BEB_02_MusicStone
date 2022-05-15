@@ -3,13 +3,15 @@ import styled from "styled-components";
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
 
-const PreviewStream = ({ stone }) => {
+const PreviewStream = ({ stoneId, img }) => {
     const audioRef = useRef(null);
     const imgRef = useRef(null);
     const [isPlay, setIsPlay] = useState(false);
     const [minute, setMinute] = useState(0);
     const [second, setSecond] = useState(0);
     const [musicLength, setMusicLength] = useState(0);
+    const server =
+        process.env.REACT_APP_SERVER_ADDRESS || "http://127.0.0.1:12367";
 
     const handlePlayBtn = () => {
         isPlay ? audioRef.current.pause() : audioRef.current.play();
@@ -24,6 +26,21 @@ const PreviewStream = ({ stone }) => {
         setMinute(Math.floor(curTime / 60));
     }
 
+    function showTimer() {
+        const tempTotalSec = (musicLength % 60).toFixed()
+
+        const calSec = second >= 10 ? second : `0${second}`
+        const calTotalMin = Math.floor(musicLength / 60);
+        const calTotalSec = tempTotalSec >= 10 ? tempTotalSec : `0${tempTotalSec}`;
+
+        return (
+            <Timer>
+                {`${minute}:${calSec} `}
+                /
+                {musicLength !== Infinity ? ` ${calTotalMin}:${calTotalSec}` : ' ∞'}
+            </Timer>)
+    }
+
     //interval 관련
 
     const interval = useRef();
@@ -34,7 +51,6 @@ const PreviewStream = ({ stone }) => {
 
     useEffect(() => {
         imgRef.current.style.animationPlayState = isPlay ? 'running' : 'paused';
-
         if (isPlay) {
             function tick() {
                 interval.current();
@@ -44,18 +60,26 @@ const PreviewStream = ({ stone }) => {
         }
     }, [isPlay])
 
+    useEffect(() => {
+        if (minute) {
+            audioRef.current.currentTime = 0;
+            alert('미리듣기는 1분까지만 제공됩니다.');
+        }
+    }, [minute]);
+
     return (
         <StreamingWrapper>
             <Play>
                 <ImgBox>
-                    <Img src={stone.image} alt={stone.name} ref={imgRef} />
+                    <Img src={`${server}/${img}`} alt={stoneId} ref={imgRef} />
                 </ImgBox>
                 <BtnWrapper>
                     <StreamingBtn onClick={() => handlePlayBtn()}>{isPlay ? <PauseIcon /> : <PlayArrowIcon />}</StreamingBtn>
                 </BtnWrapper>
             </Play>
-            <Timer>{minute}:{second >= 10 ? second : `0${second}`} / {Math.floor(musicLength / 60)}:{(musicLength % 60).toFixed()}</Timer>
-            <audio src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" onLoadedData={updateDuration} ref={audioRef}></audio>
+            {showTimer()}
+            {/* 현재 음원 정해진게 없어서 하나 하드코딩해놓음 */}
+            <audio src={`${server}/playlist/streaming/${stoneId}`} onLoadedData={updateDuration} ref={audioRef} type="audio/mpeg"></audio>
         </StreamingWrapper >
     );
 }
@@ -97,7 +121,9 @@ const StreamingBtn = styled.button`
 background-color:#333333;
 width: 60px;
 height: 60px;
-border-radius: 30px 30px 30px 30px;
+border: 0;
+outline: none;
+border-radius: 30px;
 cursor: pointer;
 color: white;
 `;

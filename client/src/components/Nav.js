@@ -51,7 +51,7 @@ function Nav({ connectWallet }) {
           ) : (
             <span id="connect">
               <BsWallet2
-                id="icon"
+                className="icon"
                 size="22"
                 onClick={() => {
                   connectWallet();

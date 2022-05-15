@@ -15,8 +15,8 @@ const AlbumSchema = new Schema({
   titleStoneId: { type: Number, default: 0 },
   description: { type: String, default: "None" },
   filename: String,
-  realfilename: String,
-  filepath: String,
+  originalname: String,
+  path: String,
 });
 AlbumSchema.plugin(autoIncrement.plugin, {
   model: "Album",

@@ -3,14 +3,16 @@ import { Link } from "react-router-dom";
 import styled from "styled-components";
 
 const AlbumCard = ({ album }) => {
+  const server = process.env.REACT_APP_SERVER_ADDRESS || "http://127.0.0.1:12367";
 
   return (
-    <Link to={`/album/${album.id}`} style={{ textDecoration: 'none' }}>
+    <Link Link to={`/album/${album.id}`
+    } style={{ textDecoration: 'none' }}>
       <CardContainer>
-        <Img src={album.image} />
+        <Img src={`${server}/${album.originalname}`} />
         <Name>{album.name}</Name>
       </CardContainer>
-    </Link>
+    </Link >
   );
 }
 

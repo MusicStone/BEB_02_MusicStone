@@ -13,11 +13,13 @@ export function Musician() {
   loadAll: 서버가 응답한 결과값이 20개 미만이면 모두 검색된 것이므로 true면 더이상 요청 안보내게 
   startIdx: 불러오는 Idx의 시작점 20개씩 증가
   keyword: 서버에 요청할 검색어, search시 현재 검색input창에 있는 값으로 갱신
+  initial: 초기 로딩인지 확인(로딩시 추가로딩 방지용)
   */
   const [loading, setLoading] = useState(true);
   const [loadAll, setLoadAll] = useState(false);
   const [startIdx, setStartIdx] = useState(1);
   const [keyword, setKeyword] = useState("");
+  const [initial, setInitial] = useState(true);
   //scroll체크
   const [ref, inView] = useInView();
 
@@ -30,10 +32,10 @@ export function Musician() {
   const loadMusicians = () => {
     const server = process.env.REACT_APP_SERVER_ADDRESS || "http://127.0.0.1:12367";
     const req = `${server}/musician?startIndex=${startIdx}&endIndex=${startIdx + 19}&keyword=${keyword}`
+    setLoading(true);
 
     axios.get(req)
       .then((res) => {
-        setLoading(true);
         const musicianData = res.data.data;
         dispatch(loadMusicianList(musicianData));
         if (musicianData.length < 20) setLoadAll(true);
@@ -53,24 +55,38 @@ export function Musician() {
   }
 
   useEffect(() => {
-    // 보여줄 결과가 남아 있을때 스크롤이 마지막이고 로딩 중이 아니면 load
+    // 보여줄 결과가 남아 있을때 스크롤이 로드할 위치고 로딩 중이 아니면 load
+    //startIdx !== 1은 초기 추가로드 방지
     if (inView && !loading && !loadAll && startIdx !== 1) {
       loadMusicians();
     }
   }, [inView, loading]);
 
-  //검색어 입력시
   useEffect(() => {
-    setLoadAll(false);
-  }, [keyword]);
+    // 검색조건이 변경되었으므로 list초기화
+    dispatch(resetMusicianList());
+
+    //이전 검색값이 있으면 idx초기화 후 거기서 load
+    if (startIdx !== 1) {
+      setStartIdx(1);
+    } else {
+      loadMusicians();
+      if (initial) {
+        setInitial(false);
+      }
+    }
+  }, [keyword])
 
   useEffect(() => {
-    setStartIdx(1);
-    if (!loadAll) {
-      dispatch(resetMusicianList());
+    //이전 검색에서 loadAll이 true였던 경우 초기화도 함께 실행
+    if (startIdx === 1 && loadAll) {
+      setLoadAll(false);
+      loadMusicians();
+    } else if (startIdx === 1 && !initial) {
       loadMusicians();
     }
-  }, [loadAll]);
+  }, [startIdx])
+
 
   return (
     <Body>
@@ -85,7 +101,7 @@ export function Musician() {
       </Nav>
       <CardsWrap >
         {musicianList.musicians.map((musician, idx) => {
-          return <MusicianCard key={musician} musician={musician} />;
+          return <MusicianCard key={idx + startIdx} musician={musician} />;
         })}
       </CardsWrap>
       <div id="observer" ref={ref}> </div>

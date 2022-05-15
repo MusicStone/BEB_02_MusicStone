@@ -1,13 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import select from "react-select";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import Caver from "caver-js";
+import service_abi from "../abi/Service";
 
 export default function RegisterStone() {
   const [stoneName, setStoneName] = useState("");
   const state = useSelector((state) => state.accountReducer);
   const account = state.account;
+  const navigate = useNavigate();
   const [description, setDescription] = useState("");
   const [stonefile, setStonefile] = useState(null);
   const [lyricist, setLyricist] = useState("");
@@ -15,8 +18,29 @@ export default function RegisterStone() {
   const [lyrics, setLyrics] = useState("");
   const [category, setCategory] = useState("default");
   const [album, setAlbum] = useState("");
-  const [albumName, setAlbumName] = useState([]);
+  const [albumList, setAlbumList] = useState([]);
+  const [SFTAmount, setSFTAmount] = useState(0);
+  const [txHash, setTxHash] = useState("");
+  const caver = new Caver(window.klaytn);
+  const [tokenId, setTokenId] = useState("");
+  var serviceAddress = process.env.REACT_APP_SERVICE_ADDRESS;
+  const server =
+    process.env.REACT_APP_SERVER_ADDRESS || "http://127.0.0.1:12367";
+  let albumlist;
 
+  useEffect(() => {
+    async function req() {
+      await axios
+        .get(`${server}/stones/${account}`)
+        .then((res) => {
+          albumlist = res.data.data.albumList;
+          console.log(albumlist);
+          setAlbumList(albumlist);
+        })
+        .catch((e) => console.log(e));
+    }
+    req();
+  }, []);
   const onChangeStoneName = (e) => {
     setStoneName(e.target.value);
   };
@@ -35,40 +59,36 @@ export default function RegisterStone() {
   const onChangeLyrics = (e) => {
     setLyrics(e.target.value);
   };
-
-  const saveStone = async () => {
+  const onChangeSFTAmount = (e) => {
+    setSFTAmount(Number(e.target.value));
+  };
+  const mintSFT = async () => {
+    const service = new caver.klay.Contract(
+      service_abi,
+      process.env.REACT_APP_SERVICE_ADDRESS
+    );
     if (
-      // album &&
+      album &&
       stoneName &&
       account &&
       description &&
       stonefile &&
       lyricist &&
       composer &&
-      lyrics
+      lyrics &&
+      SFTAmount
     ) {
-      const formData = new FormData();
-      formData.append("album", album);
-      formData.append("stoneName", stoneName);
-      formData.append("account", account);
-      formData.append("description", description);
-      formData.append("stonefile", stonefile);
-      formData.append("lyricist", lyricist);
-      formData.append("composer", composer);
-      formData.append("lyrics", lyrics);
-      formData.append("category", category);
-      await axios
-        .post("http://localhost:12367/stones/register", formData, {
-          headers: {
-            "content-type": "multipart/form-data",
-          },
+      const tx = await service.methods
+        .mintSFT(SFTAmount)
+        .send({
+          from: state.account,
+          gas: 1000000,
         })
-        .then((res) => {
-          console.log(res.data);
-          alert(res.data.message);
-        });
-      // } else if (!album) {
-      //   alert("앨범을 선택해주세요. 원하는 앨범이 없다면 앨범을 등록해주세요.");
+        .then((data) =>
+          setTokenId(data.events.SFTMinted[0].returnValues.token_id)
+        );
+    } else if (album == "") {
+      alert("앨범을 선택해주세요. 원하는 앨범이 없다면 앨범을 등록해주세요.");
     } else if (!stoneName) {
       alert("이름을 입력해주세요.");
     } else if (!account) {
@@ -76,23 +96,48 @@ export default function RegisterStone() {
     } else if (!description) {
       alert("소개글을 입력해주세요.");
     } else if (!stonefile) {
-      alert("음원파일을 선택해주세요");
+      alert("음원파일을 선택해주세요.");
     } else if (!lyricist) {
-      alert("작사가를 입력해주세요");
+      alert("작사가를 입력해주세요.");
     } else if (!composer) {
-      alert("작곡가를 입력해주세요");
+      alert("작곡가를 입력해주세요.");
     } else if (!lyrics) {
-      alert("가사를 입력해주세요");
+      alert("가사를 입력해주세요.");
+    } else if (!SFTAmount) {
+      alert("민팅할 SFT 개수를 입력해주세요.");
     }
+
+
   };
-  const getAlbum = async () => {
+  const saveStone = async () => {
+    const formData = new FormData();
+    formData.append("albumId", album);
+    formData.append("stoneName", stoneName);
+    formData.append("description", description);
+    formData.append("stonefile", stonefile);
+    formData.append("lyricist", lyricist);
+    formData.append("composer", composer);
+    formData.append("lyrics", lyrics);
+    formData.append("category", category);
+    formData.append("totalBalance", SFTAmount);
+    formData.append("tokenId", tokenId);
     await axios
-      .get(`http://localhost:12367/stones/register`)
-      .then((res) => {
-        setAlbumName(res.data.albumName);
+      .post(`${server}/stones/register/${account}`, formData, {
+        headers: {
+          "content-type": "multipart/form-data",
+        },
       })
-      .catch((e) => alert(e));
+      .then((res) => {
+        console.log(res.data.message);
+        navigate("/stones/myStone");
+      });
+
   };
+  useEffect(() => {
+    if (tokenId) {
+      saveStone();
+    }
+  }, [tokenId]);
   return (
     <div>
       <div id="stoneregisterpage">
@@ -121,17 +166,23 @@ export default function RegisterStone() {
             }}
           >
             <option value="">앨범을 선택해주세요.</option>
-            {albumName.map((albumname) => {
-              return <option value={albumname}>{albumname}</option>;
+            {albumList.map((e) => {
+              return (
+                <option e={e} value={e.id}>
+                  {e.name}
+                </option>
+              );
             })}
           </select>
         </div>
         <div>
+          <div>mp3 파일만 첨부 가능합니다.</div>
           <input
             className="fileinput"
             type="file"
             onChange={(e) => onChangeStoneFile(e)}
             name="stonefile"
+            accept=".mp3"
           />
         </div>
         <div>
@@ -221,8 +272,14 @@ export default function RegisterStone() {
               </select>
             </div>
           </div>
+          <div className="registertext">SFT Minting</div>
+          <input
+            className="stonenameinput"
+            placeholder="민팅할 SFT 개수를 입력해주세요."
+            onChange={onChangeSFTAmount}
+          ></input>
           <div>
-            <button className="editbtn" onClick={saveStone}>
+            <button className="editbtn" onClick={mintSFT}>
               등록
             </button>
           </div>

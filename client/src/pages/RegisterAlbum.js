@@ -1,18 +1,24 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 export function RegisterAlbum() {
   const [albumName, setAlbumName] = useState("");
   const [albumImg, setAlbumImg] = useState(null);
   const [description, setDescription] = useState("");
+  const [imgsrc, setImgsrc] = useState("");
   const state = useSelector((state) => state.accountReducer);
   const account = state.account;
+  const navigate = useNavigate();
+  const server =
+    process.env.REACT_APP_SERVER_ADDRESS || "http://127.0.0.1:12367";
   const onChangeAlbumName = (e) => {
     setAlbumName(e.target.value);
   };
   const onChangeAlbumImg = (e) => {
     setAlbumImg(e.target.files[0]);
+    setImgsrc(URL.createObjectURL(e.target.files[0]));
   };
   const onChangeDescription = (e) => {
     setDescription(e.target.value);
@@ -21,11 +27,10 @@ export function RegisterAlbum() {
     if (albumName && account && albumImg && description) {
       const formData = new FormData();
       formData.append("albumName", albumName);
-      formData.append("account", account);
-      formData.append("albumImg", albumImg);
+      formData.append("albumfile", albumImg);
       formData.append("description", description);
       await axios
-        .post("http://localhost:12367/album/register", formData, {
+        .post(`${server}/album/register/${account}`, formData, {
           headers: {
             "content-type": "multipart/form-data",
           },
@@ -33,6 +38,7 @@ export function RegisterAlbum() {
         .then((res) => {
           console.log(res.data);
           alert(res.data.message);
+          navigate("/stones/register");
         });
     } else if (!albumName) {
       alert("이름을 입력해주세요.");
@@ -48,16 +54,28 @@ export function RegisterAlbum() {
     <div id="registeralbumpage">
       <div>
         <div className="pagetitle">앨범 등록</div>
-        <div>{state.isConnect ? state.account : "지갑을 연결하세요."}</div>
+        <div className="account">
+          {state.isConnect ? state.account : "지갑을 연결하세요."}
+        </div>
+        <div>
+          {albumImg && (
+            <img
+              className="profileimg"
+              alt="sample"
+              src={imgsrc}
+              style={{ margin: "auto" }}
+            />
+          )}
+        </div>
         <div>
           <input
             className="fileinput"
             type="file"
             onChange={(e) => onChangeAlbumImg(e)}
-            name="stonefile"
+            name="albumfile"
           />
         </div>
-        <div className="registertext">composer</div>
+        <div className="registertext">album name</div>
         <input
           className="stonenameinput"
           type="text"

@@ -2,17 +2,14 @@ import styled from "styled-components";
 import React from "react"
 const SellStone = ({ trade, klayPrice, handleBuyBtn }) => {
 
-    const calPrice = () => (trade.unitPrice * klayPrice).toFixed(0);
-    const showUser = () => {
-        //user명이 있는 경우 보여주기
-        return trade.seller;
-    }
+    const calPrice = () => (trade.price * klayPrice).toFixed(0);
+
     return (
         <Trade>
-            <span>{trade.unitPrice}</span>
+            <span>{trade.price}</span>
             <span>₩ {calPrice()}</span>
-            <span>{trade.quantity}</span>
-            <span>{showUser()}</span>
+            <span>{trade.amount}</span>
+            <span>{trade.sell_user_account}</span>
             <ButtonBox>
                 <button onClick={() => handleBuyBtn(trade)}>구매</button>
             </ButtonBox>

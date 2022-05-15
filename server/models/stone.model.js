@@ -15,9 +15,12 @@ const StoneSchema = new Schema({
   composer: String,
   lyrics: String,
   filename: String,
-  realfilename: String,
-  filepath: String,
+  originalname: String,
+  path: String,
+  total_balance: { type: Number, default: 1 },
   release_date: { type: Date, default: Date.now },
+  token_id: Number,
+  streaming_count: { type: Number, default: 0 },
 });
 StoneSchema.plugin(autoIncrement.plugin, {
   model: "Stone",

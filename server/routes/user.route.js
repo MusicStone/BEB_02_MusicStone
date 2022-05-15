@@ -2,8 +2,6 @@ const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 
-//const upload = multer({ destination: "../musicians" });
-
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "musicians/");
@@ -21,5 +19,6 @@ router.post(
   upload.single("musicianfile"),
   controller.user_register_post
 );
+router.post("/deposit/:account", controller.user_deposit_post);
 
 module.exports = router;

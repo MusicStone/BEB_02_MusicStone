@@ -21,7 +21,7 @@ export function Mypage() {
             </Link>
           </span>
           <span>
-            <Link to="/stones/buyStone" style={{ textDecoration: "none" }}>
+            <Link to="/mypage/buyToken" style={{ textDecoration: "none" }}>
               <button className="tokenbtn"> 토큰 구매창 </button>
             </Link>
           </span>

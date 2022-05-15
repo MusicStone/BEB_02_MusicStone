@@ -59,7 +59,6 @@ const SNSList = ({ snsList, setSnsList, idx }) => {
 
     return (
         <Li>
-            {console.log(snsList)}
             <ICON>{showImg()}</ICON>
             <Input value={url} onChange={handleInput} />
             <RemoveBtn onClick={deleteSNS}><DeleteForeverIcon /></RemoveBtn>

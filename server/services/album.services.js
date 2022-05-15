@@ -5,33 +5,29 @@ const {
   MusicianModel,
 } = require("../models/index");
 
-// getAlbumInfo & getAlbumStoneInfo (+ stones like값 넣기)
-const getAlbumInfo = async (id, userId) => {
-  console.log(`albumId: ${id}`);
+// getAlbumInfo & getAlbumStoneInfo
+const getAlbumInfo = async (albumId, userId) => {
   try {
-    const albumInfo = await AlbumModel.findOne({ id });
+    const albumInfo = await AlbumModel.findOne({ id: albumId });
     const musicianInfo = await MusicianModel.findOne(
       { id: albumInfo.musician_id },
-      { name_korea: 1, name_english: 1 }
+      { name_korea: 1, name_english: 1, originalname: 1, _id: 0 }
     );
     const stoneList = await StoneModel.find(
-      { album_id: id },
-      { _id: 0, release_date: 0 }
+      { album_id: albumId },
+      { _id: 0, release_date: 0, __v: 0 }
     );
-
-    // 객체에 isLike값 넣기
-    const stones = stoneList.map((el) => {
-      console.log(typeof el);
-      const isLike = el.like.indexOf(userId) !== -1 ? true : false;
-      Object.assign(el, { isLike: true });
-      return el;
-    });
-
+    let stonesIsLikeList = [];
+    for (let stone of stoneList) {
+      const isLike = stone.like.indexOf(userId) !== -1 ? true : false;
+      stonesIsLikeList.push(isLike);
+    }
+    // Album 좋아요 여부
     let isLike = await AlbumModel.find({
-      $and: [{ like: userId }, { id }],
+      $and: [{ like: userId }, { id: albumId }],
     });
     isLike = isLike = isLike.length === 0 ? false : true;
-    return { musicianInfo, albumInfo, stones, isLike };
+    return { musicianInfo, albumInfo, stoneList, stonesIsLikeList, isLike };
   } catch (e) {
     throw Error(e);
   }
@@ -62,25 +58,24 @@ const updateLike = async (likeInfo) => {
 };
 
 // insertAlbum
-const insertAlbum = async (albumInfo, fileInfo) => {
+const insertAlbum = async (albumInfo, fileInfo, account) => {
   try {
-    const { albumName, userId, description } = albumInfo;
-    const { filename, realfilename, filepath } = fileInfo;
-    //userId로 musicianId가져오기
+    const { albumName, description } = albumInfo;
+    const { filename, originalname, path } = fileInfo;
+    //account로 musicianId가져오기
     const musician = await UserModel.findOne(
-      { id: userId },
-      { musician_id: 1 }
+      { account },
+      { musician_id: 1, _id: 0 }
     );
     const Album = new AlbumModel({
       musician_id: musician.musician_id,
       name: albumName,
       description,
       filename,
-      realfilename,
-      filepath,
+      originalname,
+      path,
     });
-    const isIn = await Album.save();
-    return;
+    return await Album.save();
   } catch (e) {
     throw Error(e);
   }

@@ -1,22 +1,56 @@
 import React, { forwardRef, useImperativeHandle, useState } from "react"
 import styled from "styled-components";
+import Caver from "caver-js";
+import service_abi from '../../abi/Service';
+import axios from 'axios';
 
 
-const TradeStoneModal = forwardRef(({ klayPrice, stoneData, modalOpen, modalTrade, setModalOpen }, ref) => {
+
+const TradeStoneModal = forwardRef(({ klayPrice, stoneData, modalOpen, modalTrade, setModalOpen, account, showName, id }, ref) => {
     const [quantity, setQuantity] = useState(0);
+    const caver = new Caver(window.klaytn);
+    const server = process.env.REACT_APP_SERVER_ADDRESS || "http://127.0.0.1:12367";
+
     const handleClose = () => {
         setModalOpen(false);
     }
     const handleInput = (e) => {
 
-        if (Number(e.target.value) > modalTrade.quantity) {
-            alert(`현재 남은 판매수량은 ${modalTrade.quantity}개 입니다.`);
+        if (Number(e.target.value) > modalTrade.amount) {
+            alert(`현재 남은 판매수량은 ${modalTrade.amount}개 입니다.`);
         } else {
             setQuantity(e.target.value)
         }
     }
-    const handleBuy = () => {
-        console.log('구매!')
+
+    //현재 서버에서 리스트 받아오는게 아직이라 하드코딩값 구매됨
+    const handleBuy = async () => {
+        const service = new caver.klay.Contract(service_abi, process.env.REACT_APP_SERVICE_ADDRESS);
+
+        if (account.isConnect) {
+            const tx = await service.methods
+                //여기 요청보낼때 서버에서 온 item_id랑 id중에 어떤걸로 보내야하는지 헷갈림
+                .purchaseItem(modalTrade.item_id, quantity)
+                .send({
+                    from: account.account,
+                    //value = amount * unitPrice
+                    value: caver.utils.toPeb((quantity * modalTrade.price).toString()),
+                    gas: 1000000,
+                })
+                .then(() => {
+                    const req = `${server}/stones/tradestone/${id}`
+                    axios.post(req, {
+                        quantity,
+                        tradeId: modalTrade.id
+                    })
+                        .then((res) => {
+                            alert('구매가 완료되었습니다.')
+                            console.log(res)
+                        })
+                })
+        } else {
+            alert("지갑을 연결해주세요.");
+        }
     }
 
     useImperativeHandle(ref, () => ({
@@ -41,22 +75,22 @@ const TradeStoneModal = forwardRef(({ klayPrice, stoneData, modalOpen, modalTrad
                     </Nav>
                     <Cart>
                         <Receipt>
-                            <Item>{stoneData.name} - {stoneData.musician_name}</Item>
+                            <Item>{stoneData.stoneDetail.name} - {stoneData.musician ? showName() : ''}</Item>
                             <InputWrapper>
                                 <ReceiptInput type="number" min="0" value={quantity} onChange={(e) => handleInput(e)} />
                             </InputWrapper>
-                            <PriceQuantity>{modalTrade.unitPrice} KLAY</PriceQuantity>
+                            <PriceQuantity>{modalTrade.price} KLAY</PriceQuantity>
                         </Receipt>
                         <Total>
                             <div><h3>Total</h3></div>
                             <TotalPrice>
-                                <div>{(modalTrade.unitPrice * quantity).toFixed(3)} KLAY</div>
-                                <div>{(klayPrice * modalTrade.unitPrice * quantity).toFixed(0)} 원</div>
+                                <div>{(modalTrade.price * quantity).toFixed(3)} KLAY</div>
+                                <div>{(klayPrice * modalTrade.price * quantity).toFixed(0)} 원</div>
                             </TotalPrice>
                         </Total>
                     </Cart>
                     <BtnBox>
-                        <BuyBtn onClick={() => handleBuy()}>구매</BuyBtn>
+                        <BuyBtn onClick={handleBuy}>구매</BuyBtn>
                     </BtnBox>
                 </Content>
             </ModalWindow>

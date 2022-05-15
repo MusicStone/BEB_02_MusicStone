@@ -10,6 +10,8 @@ const UserSchema = new Schema({
   account: String,
   register_date: { type: Date, default: Date.now },
   playlist_id_array: { type: [Number], defualut: [] },
+  deposit: { type: Number, default: 0 },
+  deduction: { type: Number, defualut: 0 },
 });
 UserSchema.plugin(autoIncrement.plugin, {
   model: "User",

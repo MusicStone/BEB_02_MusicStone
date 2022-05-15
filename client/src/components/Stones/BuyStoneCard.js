@@ -6,22 +6,25 @@ import styled from "styled-components";
 
 
 const BuyStoneCard = ({ stone }) => {
+    const server = process.env.REACT_APP_SERVER_ADDRESS || "http://127.0.0.1:12367";
 
     return (
-        <Link to={`/stones/tradeStone/${stone.id}`} style={{ textDecoration: "none" }}>
+        <Link to={`/stones/tradeStone/${stone.stoneId}`} style={{ textDecoration: "none" }}>
             <CardContainer>
-                <Balance>
-                    {stone.myBalance ? `보유 : ${stone.myBalance}` : " "}
-                </Balance>
-                <Img src={stone.img} />
+                <Img src={`${server}/${stone.img}`} />
                 <Name>{stone.name}</Name>
                 <Musician>{stone.musician_name}</Musician>
                 <TradeBox>
-                    <Price>{stone.minPrice} KLAY</Price>
+                    <Balance>
+                        {stone.myBalance ? `보유 : ${stone.myBalance}` : " "}
+                    </Balance>
+                    <Price>{stone.price} KLAY</Price>
+                    {/*가격변동폭 시간상 보류
                     <PriceDif color={stone.priceDif > 0 ? "#e81a46" : "#00a1ff"}>
                         {stone.priceDif > 0 ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
                         {stone.priceDif} %
                     </PriceDif>
+                    */}
                 </TradeBox>
             </CardContainer>
         </Link>
@@ -70,10 +73,10 @@ width: 100%;
 text-align: center;
 }
 `;
-const Balance = styled.div`
-margin: 5px auto 5px;
-color: #FFA556;
-font-weight: 500;
+const Balance = styled.span`
+color: #777777;
+display:flex;
+justify-content: center;
 white-space: pre;
 `;
 const Price = styled.span`

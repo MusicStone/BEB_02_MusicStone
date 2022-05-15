@@ -1,4 +1,14 @@
-var { UserModel, MusicianModel } = require("../models/index");
+const { UserModel, MusicianModel } = require("../models/index");
+const ServiceContract = require("../contracts/ServiceContract");
+
+// getUserInfo
+const getUserInfo = async (id) => {
+  try {
+    return await UserModel.find({ id });
+  } catch (e) {
+    throw Error(e);
+  }
+};
 
 // insertUser and getUserId
 const getUserId = async (account) => {
@@ -11,43 +21,60 @@ const getUserId = async (account) => {
   }
 };
 
-// getUserInfo
-const getUserInfo = async (id) => {
+// registerMusician ( sns추가하기 )
+const insertMusician = async (musicianInfo, fileInfo) => {
   try {
-    return await UserModel.find({ id });
+    let { userId, KName, EName, email, description, account } = musicianInfo;
+    const { filename, originalname, path } = fileInfo;
+    const isMusician = (
+      await UserModel.findOne({ account }, { musician_id: 1, _id: 0 })
+    ).musician_id;
+    if (isMusician === 0) {
+      const isMint = await ServiceContract.addMinter(account);
+      if (isMint) {
+        const Musician = new MusicianModel({
+          name_korea: KName,
+          name_english: EName,
+          email,
+          description,
+          filename,
+          originalname,
+          path,
+        });
+        const isIn = await Musician.save();
+        return isIn !== {}
+          ? await UserModel.updateOne({ id: userId }, { musician_id: isIn.id })
+          : {};
+      } else {
+        return "Fail";
+      }
+    } else {
+      return "Double";
+    }
   } catch (e) {
     throw Error(e);
   }
 };
 
-// registMusician
-const insertMusician = async (musicianInfo, fileInfo) => {
-  const { userId, KName, EName, email, description, snsList } = musicianInfo;
-  const { filename, originalname, path } = fileInfo;
-  console.log(typeof snsList);
-  // 먼저 musician에 넣고 id값 User에 musician_id로 업데이트
-  const Musician = new MusicianModel({
-    name_korea: KName,
-    name_english: EName,
-    email,
-    description,
-    filename: filename,
-    sns_list: [snsList],
-    realfilename: originalname,
-    filepath: path,
-  });
-  const isIn = await Musician.save();
-  // musiciain id 가져와서 user에 업데이트 해주기
-  return isIn
-    ? await UserModel.update(
-        { id: userId },
-        { $addToSet: { musician_id: isIn.id } }
-      )
-    : {};
+const updateDeposit = async (account) => {
+  try {
+    const deposit = await ServiceContract.getUserDeposit(account);
+    if (deposit) {
+      const isIn = await UserModel.updateOne(
+        { account },
+        { $set: { deposit: deposit } }
+      );
+      return isIn === {} ? false : true;
+    } else {
+      return false;
+    }
+  } catch (e) {
+    throw Error(e);
+  }
 };
-
 module.exports = {
   getUserId,
   getUserInfo,
   insertMusician,
+  updateDeposit,
 };

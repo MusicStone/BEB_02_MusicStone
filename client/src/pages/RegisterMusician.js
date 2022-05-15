@@ -1,19 +1,24 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
-import SNSList from '../components/SNSList';
+import SNSList from "../components/SNSList";
+import { useNavigate } from "react-router-dom";
 
 export function RegisterMusician() {
   const [KName, setKName] = useState("");
   const [EName, setEName] = useState("");
   const state = useSelector((state) => state.accountReducer);
   const account = state.account;
+  const userId = state.userId;
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [img, setImg] = useState(null);
   const [imgsrc, setImgsrc] = useState(null);
   const [description, setDescription] = useState("");
   const [snsList, setSnsList] = useState([]);
   const [count, setCount] = useState(0);
+  const server =
+    process.env.REACT_APP_SERVER_ADDRESS || "http://127.0.0.1:12367";
 
   const onChangeKName = (e) => {
     setKName(e.target.value);
@@ -32,25 +37,35 @@ export function RegisterMusician() {
   const onChangeDescription = (e) => {
     setDescription(e.target.value);
   };
+  // userId 추가
   const saveMusician = async () => {
-    if ((KName || EName) && account && email && img && description) {
+    if ((KName || EName) && account && email && img && description && userId) {
+      console.log(snsList);
       const formData = new FormData();
       formData.append("KName", KName);
       formData.append("EName", EName);
       formData.append("account", account);
       formData.append("email", email);
-      formData.append("img", img);
+      formData.append("musicianfile", img);
       formData.append("description", description);
-      formData.append("snsList", snsList);
+      formData.append("userId", userId);
+      // formData.append("snsList", snsList);
+      var sns = [];
+      for (let i = 0; i < snsList.length; i++) {
+        sns.push(JSON.stringify(snsList[i]));
+      }
+      formData.append(`sns`, sns);
+
       await axios
-        .post("http://localhost:12367/user/register", formData, {
+        .post(`${server}/user/register`, formData, {
           headers: {
             "content-type": "multipart/form-data",
           },
         })
         .then((res) => {
-          console.log(res.data);
+          console.log(res);
           alert(res.data.message);
+          navigate("/musician");
         });
     } else if (!KName && !EName) {
       alert("이름을 입력해주세요.");
@@ -62,20 +77,25 @@ export function RegisterMusician() {
       alert("소개글을 입력해주세요.");
     } else if (!img) {
       alert("뮤지션의 사진 선택해주세요.");
+    } else if (!userId) {
+      alert("userID 가 없습니다.");
     }
   };
   const addSNS = () => {
     setCount(count + 1);
-  }
+  };
   useEffect(() => {
     if (count) {
-      setSnsList([...snsList, {
-        type: "homepage",
-        url: "",
-        idx: count
-      }]);
+      setSnsList([
+        ...snsList,
+        {
+          type: "homepage",
+          url: "",
+          idx: count,
+        },
+      ]);
     }
-  }, [count])
+  }, [count]);
   return (
     <div>
       <div id="registerpage">
@@ -133,10 +153,21 @@ export function RegisterMusician() {
             onChange={onChangeDescription}
           ></textarea>
         </div>
-        <div id='sns_wrapper'>
-          <div className='registertext'>SNS <button className='snsAddBtn' onClick={addSNS}>+</button></div>
-          <ul id='snsList'>
-            {snsList.map((sns) => <SNSList snsList={snsList} setSnsList={setSnsList} idx={sns.idx} />)}
+        <div id="sns_wrapper">
+          <div className="registertext">
+            SNS{" "}
+            <button className="snsAddBtn" onClick={addSNS}>
+              +
+            </button>
+          </div>
+          <ul id="snsList">
+            {snsList.map((sns) => (
+              <SNSList
+                snsList={snsList}
+                setSnsList={setSnsList}
+                idx={sns.idx}
+              />
+            ))}
           </ul>
         </div>
         <div>
