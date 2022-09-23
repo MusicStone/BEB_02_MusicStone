@@ -5,7 +5,7 @@ export function Main() {
   return (
     <div>
       <div className="f">
-        <span className="maintxt">Collect^^</span>
+        <span className="maintxt">Collect^^...</span>
         <br />
         <span className="maintxt">Your</span>
         <br />
